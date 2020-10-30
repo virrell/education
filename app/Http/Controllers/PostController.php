@@ -4,40 +4,84 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
+use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
-    public function createPost(Request $req){
+    private $CreatePostViewModel = [
+        'contentFieldName' =>'content-field',
+        'postContent' => '',
+        'actionRoute' => '',
+
+    ];
+
+
+    public function createPost(Request $req)
+    {
         $post = new Post();
-        $post->post_content = $req->input('post-content');
+        $post->post_content = $req->input($this->CreatePostViewModel['contentFieldName']);
+        $post->user_id = auth()->user()->id;
         $post->save();
 
-        return redirect()->route('posts');
+        return redirect()->route('dashboard');
     }
 
-    public function deletePost($id){
+    public function deletePost($id)
+    {
         Post::find($id)->delete();
-        return redirect()->route('posts');
+        return redirect()->route('dashboard');
     }
 
-    public function updatePost($id, Request $req) {
+    public function updatePost($id, Request $req)
+    {
         $post = Post::find($id);
-        $post->post_content = $req->input('post-content');
+        $post->post_content = $req->input($this->CreatePostViewModel['contentFieldName']);
         $post->save();
-        return redirect()->route('posts');
+        return redirect()->route('dashboard');
     }
 
     public function getAllPosts(Request $req)
     {
-        $posts = Post::all();
+        $posts = Post::orderBy('created_at', 'desc')->get();
+        $postsForRendering = [];
+        
 
-        return view('home', ['posts' => $posts]);
+
+        foreach ($posts as $post){
+            $user=User::find($post->user_id);
+            $belolgsToAuthUser = ($post->user_id === auth()->user()->id) ? true : false;
+
+            $PostcardViewModel = [
+                'id' => $post->id,
+                'content' => $post->post_content,
+                'createTime' => $post->created_at,
+                'updateTime' => $post->updated_at,
+                'userAvatar' => $user->profile_photo_url,
+                'userName' => $user->name,
+                'isEditable' => $belolgsToAuthUser,
+            ];
+            array_push($postsForRendering, $PostcardViewModel);
+        }
+
+        return view('dashboard', ['viewModel' => $postsForRendering]);
     }
 
-    public function getPost($id)
+    public function showPostUpdateForm($id)
     {
         $post = Post::find($id);
+        $this->CreatePostViewModel['postContent'] = $post->post_content;
+        $this->CreatePostViewModel['actionRoute'] = route('post-update', $id);
+        return view('posts.update-post', ['viewModel' => $this->CreatePostViewModel]);
+    }
 
-        return view('post', ['data' => $post]);
+    public function showCreatePostForm()
+    {
+        $this->CreatePostViewModel['actionRoute'] = route('create-post');
+        return view('posts.create-post',
+            [
+                'viewModel' => $this->CreatePostViewModel,
+            ]
+        );
     }
 }
