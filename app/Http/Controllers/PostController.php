@@ -10,12 +10,11 @@ use Illuminate\Support\Facades\Storage;
 class PostController extends Controller
 {
     private $CreatePostViewModel = [
-        'contentFieldName' =>'content-field',
+        'contentFieldName' => 'content-field',
         'postContent' => '',
         'actionRoute' => '',
 
     ];
-
 
     public function createPost(Request $req)
     {
@@ -28,8 +27,11 @@ class PostController extends Controller
     }
 
     public function deletePost($id)
-    {
-        Post::find($id)->delete();
+    {   $post = Post::find($id);
+        if ($this->isBelongToAuthUser($post))
+        {
+            $post->delete();
+        }
         return redirect()->route('dashboard');
     }
 
@@ -45,12 +47,9 @@ class PostController extends Controller
     {
         $posts = Post::orderBy('created_at', 'desc')->get();
         $postsForRendering = [];
-        
 
-
-        foreach ($posts as $post){
-            $user=User::find($post->user_id);
-            $belolgsToAuthUser = ($post->user_id === auth()->user()->id) ? true : false;
+        foreach ($posts as $post) {
+            $user = User::find($post->user_id);
 
             $PostcardViewModel = [
                 'id' => $post->id,
@@ -59,7 +58,7 @@ class PostController extends Controller
                 'updateTime' => $post->updated_at,
                 'userAvatar' => $user->profile_photo_url,
                 'userName' => $user->name,
-                'isEditable' => $belolgsToAuthUser,
+                'isEditable' => $this->isBelongToAuthUser($post),
             ];
             array_push($postsForRendering, $PostcardViewModel);
         }
@@ -70,18 +69,28 @@ class PostController extends Controller
     public function showPostUpdateForm($id)
     {
         $post = Post::find($id);
-        $this->CreatePostViewModel['postContent'] = $post->post_content;
-        $this->CreatePostViewModel['actionRoute'] = route('post-update', $id);
-        return view('posts.update-post', ['viewModel' => $this->CreatePostViewModel]);
+
+        if ($this->isBelongToAuthUser($post)) {
+            $this->CreatePostViewModel['postContent'] = $post->post_content;
+            $this->CreatePostViewModel['actionRoute'] = route('post-update', $id);
+            return view('posts.update-post', ['viewModel' => $this->CreatePostViewModel]);
+        }
+        return redirect()->route('dashboard');
     }
 
     public function showCreatePostForm()
     {
         $this->CreatePostViewModel['actionRoute'] = route('create-post');
-        return view('posts.create-post',
+        return view(
+            'posts.create-post',
             [
                 'viewModel' => $this->CreatePostViewModel,
             ]
         );
+    }
+
+    private function isBelongToAuthUser(Post $post)
+    {
+        return ($post->user_id === auth()->user()->id) ? true : false;
     }
 }
