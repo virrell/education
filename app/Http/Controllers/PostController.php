@@ -13,6 +13,7 @@ class PostController extends Controller
         'contentFieldName' => 'content-field',
         'postContent' => '',
         'actionRoute' => '',
+        'postId' => '',
 
     ];
 
@@ -73,6 +74,8 @@ class PostController extends Controller
         if ($this->isBelongToAuthUser($post)) {
             $this->CreatePostViewModel['postContent'] = $post->post_content;
             $this->CreatePostViewModel['actionRoute'] = route('post-update', $id);
+            $this->CreatePostViewModel['postId'] = $post->id;
+
             return view('posts.update-post', ['viewModel' => $this->CreatePostViewModel]);
         }
         return redirect()->route('dashboard');

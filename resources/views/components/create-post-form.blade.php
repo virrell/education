@@ -1,4 +1,4 @@
-<x-form-section method="POST" :action='$attributes["viewModel"]["actionRoute"]'>
+<x-form-section id="postBody" method="POST" :data-postid='$attributes["viewModel"]["postId"]' :action='$attributes["viewModel"]["actionRoute"]'>
     <x-slot name="title">
         {{ $title }}
     </x-slot>
@@ -12,12 +12,11 @@
             <x-text-area 
             :name='$attributes["viewModel"]["contentFieldName"]' 
             :content='$attributes["viewModel"]["postContent"]'  
-            autofocus='autofocus' class="mt-1 block w-full"/>
+            autofocus='autofocus' class="mt-1 block w-full"
+            />
         </div>
     </x-slot>
     <x-slot name="actions">
-        <x-jet-button>
-            {{ __('Опубликовать') }}
-        </x-jet-button>
+        {{ $actions }}
     </x-slot>
 </x-form-section>
