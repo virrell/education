@@ -111,15 +111,12 @@ window.addEventListener('DOMContentLoaded', function () {
   submitDeleteBtn.addEventListener('click', function (event) {
     event.preventDefault();
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', url, true);
+    xhr.open('DELETE', url, true);
     xhr.setRequestHeader('X-CSRF-TOKEN', token);
-    console.log(xhr);
 
     xhr.onload = function () {
-      if (this.status == 200) {
-        modal.classList.toggle('hidden');
-        window.location.replace(redirectUrl);
-      }
+      modal.classList.toggle('hidden');
+      window.location.replace(redirectUrl);
     };
 
     xhr.send();

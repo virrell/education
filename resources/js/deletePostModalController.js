@@ -19,9 +19,8 @@ window.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
         let xhr = new XMLHttpRequest();
-        xhr.open('POST', url, true);
+        xhr.open('DELETE', url, true);
         xhr.setRequestHeader('X-CSRF-TOKEN', token);
-        console.log(xhr);
         xhr.onload = function(){
             if(this.status == 200){
                 modal.classList.toggle('hidden');

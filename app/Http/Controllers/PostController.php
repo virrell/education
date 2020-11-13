@@ -2,98 +2,116 @@
 
 namespace App\Http\Controllers;
 
+use Education\Repo\Post\PostInterface;
+use Education\Presenter\Post\PostPresenterInterface;
+
 use Illuminate\Http\Request;
-use App\Models\Post;
-use App\Models\User;
-use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
-    private $CreatePostViewModel = [
-        'contentFieldName' => 'content-field',
-        'postContent' => '',
-        'actionRoute' => '',
-        'postId' => '',
+    protected $post;
+    protected $postPresenter;
 
-    ];
-
-    public function createPost(Request $req)
+    public function __construct(PostInterface $post, PostPresenterInterface $postPresenter)
     {
-        $post = new Post();
-        $post->post_content = $req->input($this->CreatePostViewModel['contentFieldName']);
-        $post->user_id = auth()->user()->id;
-        $post->save();
-
-        return redirect()->route('dashboard');
+        $this->post = $post;
+        $this->postPresenter = $postPresenter;
     }
 
-    public function deletePost($id)
-    {   $post = Post::find($id);
-        if ($this->isBelongToAuthUser($post))
-        {
-            $post->delete();
-        }
-        return redirect()->route('dashboard');
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        $posts = $this->post->getAllPosts();
+        return view('dashboard', $this->postPresenter->postsListViewModel($posts));
     }
 
-    public function updatePost($id, Request $req)
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
     {
-        $post = Post::find($id);
-        $post->post_content = $req->input($this->CreatePostViewModel['contentFieldName']);
-        $post->save();
-        return redirect()->route('dashboard');
+        return view('posts.create-post', $this->postPresenter->createPostFormViewModel());
     }
 
-    public function getAllPosts(Request $req)
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
     {
-        $posts = Post::orderBy('created_at', 'desc')->get();
-        $postsForRendering = [];
-
-        foreach ($posts as $post) {
-            $user = User::find($post->user_id);
-
-            $PostcardViewModel = [
-                'id' => $post->id,
-                'content' => $post->post_content,
-                'createTime' => $post->created_at,
-                'updateTime' => $post->updated_at,
-                'userAvatar' => $user->profile_photo_url,
-                'userName' => $user->name,
-                'isEditable' => $this->isBelongToAuthUser($post),
-            ];
-            array_push($postsForRendering, $PostcardViewModel);
-        }
-
-        return view('dashboard', ['viewModel' => $postsForRendering]);
-    }
-
-    public function showPostUpdateForm($id)
-    {
-        $post = Post::find($id);
-
-        if ($this->isBelongToAuthUser($post)) {
-            $this->CreatePostViewModel['postContent'] = $post->post_content;
-            $this->CreatePostViewModel['actionRoute'] = route('post-update', $id);
-            $this->CreatePostViewModel['postId'] = $post->id;
-
-            return view('posts.update-post', ['viewModel' => $this->CreatePostViewModel]);
-        }
-        return redirect()->route('dashboard');
-    }
-
-    public function showCreatePostForm()
-    {
-        $this->CreatePostViewModel['actionRoute'] = route('create-post');
-        return view(
-            'posts.create-post',
-            [
-                'viewModel' => $this->CreatePostViewModel,
-            ]
+        $data = array(
+            'post_content' => $request->input($this->postPresenter->createPostFormViewModel()['viewModel']['contentFieldName']),
+            'user_id' => auth()->user()->id,
         );
+        $this->post->create($data);
+
+        return redirect()->route('dashboard');
     }
 
-    private function isBelongToAuthUser(Post $post)
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
     {
-        return ($post->user_id === auth()->user()->id) ? true : false;
+        $data = array(
+            'post_content' => $request->input($this->postPresenter->createPostFormViewModel()['viewModel']['contentFieldName']),
+            'id' => $id,
+        );
+        $this->post->update($data);
+
+        return redirect()->route('dashboard');
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        return abort('404');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $post = $this->post->byId($id);
+
+        if ($post->isBelongToAuthUser()) {
+            return view('posts.update-post', $this->postPresenter->editPostViewModel($post));
+        }
+        return redirect()->route('dashboard');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $this->post->deleteById($id);
+        //return redirect()->route('dashboard');
+        //Почему если установлен редирект, то AJAX возвращает ошибку 405. Без редиректа из контроллера все хорошо. 
+        //Как этого избежать сохранив редирект из контроллера
     }
 }

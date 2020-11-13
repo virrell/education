@@ -15,7 +15,7 @@
                     <x-jet-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Блог') }}
                     </x-jet-nav-link>
-                    <x-jet-nav-link href="{{ route('create-post-form') }}" :active="request()->routeIs('create-post-form')">
+                    <x-jet-nav-link href="{{ route('post.create') }}" :active="request()->routeIs('post.create')">
                         {{ __('Создать пост') }}
                     </x-jet-nav-link>
                 </div>
@@ -128,7 +128,7 @@
                 {{ __('Dashboard') }}
             </x-jet-responsive-nav-link>
 
-            <x-jet-responsive-nav-link href="{{ route('create-post-form') }}" :active="request()->routeIs('create-post-form')">
+            <x-jet-responsive-nav-link href="{{ route('post.create') }}" :active="request()->routeIs('post.create')">
                 {{ __('Создать пост') }}
             </x-jet-nav-link>
         </div>

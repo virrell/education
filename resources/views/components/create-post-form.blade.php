@@ -1,4 +1,5 @@
-<x-form-section id="postBody" method="POST" :data-postid='$attributes["viewModel"]["postId"]' :action='$attributes["viewModel"]["actionRoute"]'>
+<x-form-section id="postBody" method="POST" :action='$attributes["viewModel"]["actionRoute"]' :httpmethod='$attributes["httpmethod"]'>
+    
     <x-slot name="title">
         {{ $title }}
     </x-slot>

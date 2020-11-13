@@ -9,8 +9,14 @@ class Post extends Model
 {
     use HasFactory;
     
+
     public function user(){
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function isBelongToAuthUser(){
+
+        return $this->user()->first()->id === auth()->user()->id;
     }
 }
 

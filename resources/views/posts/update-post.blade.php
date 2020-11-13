@@ -5,7 +5,7 @@
                 Редактирование
             </h2>
         </x-slot>
-        <x-create-post-form id="postBody" title="Отредактируйте" :viewModel='$viewModel' data-postid='{{ $viewModel["postId"] }}'>
+        <x-create-post-form id="postBody" title="Отредактируйте" :viewModel='$viewModel' httpmethod='PUT'>
             <x-slot name="actions">
                 <x-jet-button>
                     {{ __('Сохранить изменения') }}
@@ -19,7 +19,7 @@
     <x-modal id="modal"/>
     <script src="{{ asset('js/deletePostModalController.js') }}"></script>
     <script>
-            const url = '{{ route("post-delete", $viewModel["postId"]) }}';
+            const url = '{{ route("post.destroy", $viewModel["postId"]) }}';
             const redirectUrl = '{{ route("dashboard") }}';
     </script>
 </x-app-layout>

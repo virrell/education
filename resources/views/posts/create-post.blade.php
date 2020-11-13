@@ -5,7 +5,9 @@
                 Создать
             </h2>
         </x-slot>
-        <x-create-post-form title="Новый пост" :viewModel='$viewModel'>
+
+        <x-create-post-form title="Новый пост" httpmethod='POST' :viewModel='$viewModel'>
+            
             <x-slot name="actions">
                 <x-jet-button>
                     {{ __('Опубликовать') }}

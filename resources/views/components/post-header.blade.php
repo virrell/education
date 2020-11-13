@@ -15,7 +15,7 @@
     </div>
     @if ($isEditable)
         <div class="ml-auto text-xs text-blue-500">
-        <a href={{route('update-post-form', $id) }}>Edit</a>
+        <a href={{route('post.edit', $id) }}>Edit</a>
         </div>
     @endif
 </div>
